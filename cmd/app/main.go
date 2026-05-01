@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"short-link/cmd/internal/handler"
 	"short-link/cmd/internal/repository"
 	"short-link/cmd/internal/service"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -18,10 +20,27 @@ func main() {
 	var repo repository.Repository
 
 	if cfg.StorageType == "postgres" {
-		db, err := sql.Open("postgres", cfg.PostgresDNS)
+		if cfg.PostgresDSN == "" {
+			log.Fatal("POSTGRES_DSN is required when STORAGE=postgres")
+		}
+
+		db, err := sql.Open("postgres", cfg.PostgresDSN)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer db.Close()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := db.PingContext(ctx); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := repository.InitPostgres(ctx, db); err != nil {
+			log.Fatal(err)
+		}
+
 		repo = repository.NewPostgresRepo(db)
 	} else {
 		repo = repository.NewMemoryRepo()

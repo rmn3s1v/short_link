@@ -1,5 +1,5 @@
 module short-link
 
-go 1.25.7
+go 1.22
 
 require github.com/lib/pq v1.12.3

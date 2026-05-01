@@ -4,21 +4,26 @@ import "os"
 
 type Config struct {
 	StorageType string
-	PostgresDNS string
+	PostgresDSN string
 	ServerPort  string
 }
 
 func Load() *Config {
+	postgresDSN := getEnv("POSTGRES_DSN", "")
+	if postgresDSN == "" {
+		postgresDSN = getEnv("POSTGRES_DNS", "")
+	}
+
 	return &Config{
 		StorageType: getEnv("STORAGE", "memory"),
-		PostgresDNS: getEnv("POSTGRES_DNS", ""),
-		ServerPort:  getEnv("PORT", ""),
+		PostgresDSN: postgresDSN,
+		ServerPort:  getEnv("PORT", "8080"),
 	}
 }
 
-func getEnv(key, definition string) string{
-	if v := os.Getenv(key); v != ""{
-		return  v
+func getEnv(key, definition string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
 
 	return definition

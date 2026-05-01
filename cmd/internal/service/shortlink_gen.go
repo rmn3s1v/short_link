@@ -22,15 +22,16 @@ func (s *Service) Shorten(original string) (string, error) {
 		return "", errors.New("invalid url")
 	}
 
-	existing, _ := s.repo.GetByURL(original)
+	existing, err := s.repo.GetByURL(original)
+	if err != nil {
+		return "", err
+	}
 	if existing != "" {
 		return existing, nil
 	}
 
 	short := utils.Generate(original)
-	err := s.repo.Save(original, short)
-
-	if err != nil {
+	if err := s.repo.Save(original, short); err != nil {
 		return "", err
 	}
 
@@ -38,5 +39,5 @@ func (s *Service) Shorten(original string) (string, error) {
 }
 
 func (s *Service) Resolve(short string) (string, error) {
-    return s.repo.GetByShortURL(short)
+	return s.repo.GetByShortURL(short)
 }

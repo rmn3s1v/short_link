@@ -1,12 +1,15 @@
 package utils
 
-import (
-	"crypto/sha256"
-	"encoding/base64"
-)
+import "crypto/sha256"
 
-func Generate(url string) string{
+const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+
+func Generate(url string) string {
 	hash := sha256.Sum256([]byte(url))
-	encoded := base64.RawURLEncoding.EncodeToString(hash[:])
-	return encoded[:10]
+	short := make([]byte, 10)
+	for i := range short {
+		short[i] = alphabet[int(hash[i])%len(alphabet)]
+	}
+
+	return string(short)
 }
